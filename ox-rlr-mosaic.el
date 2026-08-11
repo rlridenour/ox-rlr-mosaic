@@ -244,7 +244,8 @@ after the slide rather than inside it.")
     (:mosaic-overflow "MOSAIC_OVERFLOW" nil nil t)
     (:mosaic-frozen-counters "MOSAIC_FROZEN_COUNTERS" nil nil t)
     (:mosaic-frozen-states "MOSAIC_FROZEN_STATES" nil nil t)
-    (:mosaic-setup "MOSAIC_SETUP" nil nil newline)))
+    (:mosaic-setup "MOSAIC_SETUP" nil nil newline)
+    (:mosaic-preamble "MOSAIC_PREAMBLE" nil nil newline)))
 
 
 ;;; Internal functions
@@ -813,6 +814,17 @@ INFO is a plist used as a communication channel."
                 (mapconcat (lambda (arg) (concat "  " (org-trim arg) ",")) args "\n"))
       "#show: m.setup\n")))
 
+(defun org-rlr-mosaic--preamble (info)
+  "Return the deck's `#+MOSAIC_PREAMBLE:' rules, or nil.
+
+These are emitted between `m.setup' and the first slide, which is where
+Mosaic expects deck-wide `set' and `show' rules: a rule placed after the
+first slide would miss it.  They are rules rather than content, so they
+do not trip Mosaic's check for content before the first heading.  INFO
+is a plist used as a communication channel."
+  (let ((preamble (org-string-nw-p (or (plist-get info :mosaic-preamble) ""))))
+    (and preamble (concat "\n" (org-trim preamble) "\n"))))
+
 (defun org-rlr-mosaic--title-slide (info)
   "Return the deck's title slide, or nil.
 INFO is a plist used as a communication channel."
@@ -856,6 +868,7 @@ communication channel."
     (concat (org-rlr-mosaic--imports info)
             "\n"
             (org-rlr-mosaic--setup info)
+            (org-rlr-mosaic--preamble info)
             "\n"
             (org-rlr-mosaic--title-slide info)
             contents))))

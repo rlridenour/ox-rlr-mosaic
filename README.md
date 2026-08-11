@@ -92,9 +92,22 @@ These keywords are passed to `m.setup`:
 | `#+MOSAIC_OVERFLOW:` | `off` (default), `error`, or `record` |
 | `#+MOSAIC_FROZEN_COUNTERS:`, `#+MOSAIC_FROZEN_STATES:` | Advance once per logical slide |
 | `#+MOSAIC_SETUP:` | Raw extra arguments, one per line, repeatable |
+| `#+MOSAIC_PREAMBLE:` | Raw Typst rules emitted just after `m.setup`, one per line, repeatable |
 | `#+MOSAIC_PACKAGE:` | Package spec (default `@preview/mosaic:0.0.1`) |
 | `#+MOSAIC_QUOTE_COMPONENT:` | `t` routes every `#+begin_quote` through Mosaic's quote component |
 | `#+MOSAIC_TITLE_SLIDE:` | `nil` for none, or a variant name such as `kicker` |
+
+Deck-wide `set` and `show` rules — typography, cell styling, note
+styling — belong in `#+MOSAIC_PREAMBLE:`, which Mosaic expects
+immediately after `m.setup`:
+
+```org
+#+MOSAIC_PREAMBLE: #set text(font: "EB Garamond", size: 26pt)
+#+MOSAIC_PREAMBLE: #show label("mosaic-cell-body"): set align(horizon)
+```
+
+A `#+MOSAIC:` line before the first heading lands *after* the title
+slide instead, so rules written there miss it.
 
 A title slide is emitted automatically when the document has a title.
 `#+OPTIONS: toc:t` adds a table-of-contents slide; unlike most Org
@@ -277,6 +290,23 @@ The same payload is attached to every `slides` build that has notes, as
 The printed companions are independent of both: `#+MOSAIC_OUTPUT: speaker`
 gives A4 pages with a slide thumbnail above its notes, and `notes` the
 notes alone.
+
+### Making the notes readable
+
+Mosaic sizes notes for a printed A4 companion — 10pt body, 12pt bold
+heading — which is too small to read on a console. They are styled by
+their own labels, independent of the deck's theme, so scaling them up is
+a pair of rules rather than a theme change:
+
+```org
+#+MOSAIC_PREAMBLE: #show label("mosaic-note-body"): set text(size: 16pt, weight: "regular")
+#+MOSAIC_PREAMBLE: #show label("mosaic-note-heading"): set text(size: 16pt)
+```
+
+`weight: "regular"` is worth including: by default the heading's bold
+carries into the note body, so the whole notes half renders bold. The
+same labels drive the printed `speaker` and `notes` builds, so one pair
+of rules covers all three.
 
 ### Where notes go
 

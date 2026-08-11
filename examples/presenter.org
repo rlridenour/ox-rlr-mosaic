@@ -7,6 +7,16 @@
 #+MOSAIC_OUTPUT: split
 #+MOSAIC_NOTES: (split-inset: 10mm)
 
+# Mosaic sizes the notes for a printed A4 companion (10pt body, 12pt
+# bold heading). On a console that is read at arm's length off a laptop,
+# so these rules scale them up deck-wide; they apply to the split output
+# and to the printed `speaker'/`notes' builds alike.
+#
+# `weight: "regular"' is deliberate: the heading's bold otherwise carries
+# into the note body, which renders the whole notes half bold.
+#+MOSAIC_PREAMBLE: #show label("mosaic-note-body"): set text(size: 16pt, weight: "regular")
+#+MOSAIC_PREAMBLE: #show label("mosaic-note-heading"): set text(size: 16pt)
+
 # The presenter console is a Mosaic 0.0.2 feature, so this deck pins the
 # development version rather than the published 0.0.1 the other example
 # uses. Install it with `make install` in a clone of the Mosaic repo.
@@ -111,7 +121,9 @@ slide needs a script.
 The notes half stays black on white whatever the deck does, because it
 is read off a laptop under house lights rather than projected.
 
-#+MOSAIC: #show label("mosaic-note-body"): set text(size: 11pt)
+Mosaic sizes notes for a printed A4 companion, which is too small to
+read on a console. The =#+MOSAIC_PREAMBLE:= lines at the top of this
+file scale them up deck-wide.
 
 #+begin_note
 Both printed outputs and the split output use =<mosaic-note-heading>=
