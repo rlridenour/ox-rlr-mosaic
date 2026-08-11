@@ -89,6 +89,7 @@ These keywords are passed to `m.setup`:
 | `#+MOSAIC_HANDOUT:` | `t` emits only the final frame of each slide |
 | `#+MOSAIC_OUTPUT:` | `slides` (default), `speaker`, `notes`, or `split` |
 | `#+MOSAIC_NOTES:` | Note-layout settings, e.g. `(split-inset: 10mm)` |
+| `#+MOSAIC_NOTES_PAPER:` | Paper for the printed `speaker`/`notes` outputs (default `us-letter`) |
 | `#+MOSAIC_OVERFLOW:` | `off` (default), `error`, or `record` |
 | `#+MOSAIC_FROZEN_COUNTERS:`, `#+MOSAIC_FROZEN_STATES:` | Advance once per logical slide |
 | `#+MOSAIC_SETUP:` | Raw extra arguments, one per line, repeatable |
@@ -288,8 +289,20 @@ The same payload is attached to every `slides` build that has notes, as
 `speaker-notes.pdfpc`; recover it with `pdfdetach -saveall`.
 
 The printed companions are independent of both: `#+MOSAIC_OUTPUT: speaker`
-gives A4 pages with a slide thumbnail above its notes, and `notes` the
-notes alone.
+gives pages with a slide thumbnail above its notes, and `notes` the notes
+alone.
+
+Mosaic fixes those companions at A4 and has no argument to change it, so
+this back-end emits a `#set page(paper: ...)` rule after `m.setup` and
+defaults it to **US Letter**. `#+MOSAIC_NOTES_PAPER:` takes any Typst
+paper name per file, `org-rlr-mosaic-notes-paper` sets the default, and
+nil leaves Mosaic's A4 alone. The rule is confined to the two printed
+outputs: `slides` and `split` size their page from the slide itself, and
+a `paper:` rule would replace that geometry.
+
+Letter is about 50pt shorter than A4, so a note that just fits an A4
+companion may overflow it. Mosaic fails the compile and names the frame
+when that happens, rather than clipping silently.
 
 ### Making the notes readable
 

@@ -127,6 +127,24 @@ Stock variants are \"ruled\", \"centered\", \"bordered\", \"kicker\",
   :group 'org-export-rlr-mosaic
   :type '(choice (const "16-9") (const "4-3")))
 
+(defcustom org-rlr-mosaic-notes-paper "us-letter"
+  "Paper size for the printed `speaker' and `notes' outputs.
+
+Mosaic fixes those companion pages at A4, which it has no argument to
+change, so this is emitted as a `#set page(paper: ...)' rule after
+`m.setup'.  Any Typst paper name works.
+
+Set this to nil to leave Mosaic's A4 alone.
+
+The rule is emitted only for the `speaker' and `notes' outputs.  The
+`slides' and `split' outputs derive their page from the slide's own
+dimensions rather than from a named paper, and a `paper:' rule would
+replace those dimensions and break the deck."
+  :group 'org-export-rlr-mosaic
+  :type '(choice (const :tag "Leave Mosaic's default (A4)" nil)
+                 (const :tag "US Letter" "us-letter")
+                 (string :tag "Typst paper name")))
+
 (defcustom org-rlr-mosaic-quote-component nil
   "Whether `#+begin_quote' becomes Mosaic's quote component.
 
@@ -240,6 +258,7 @@ after the slide rather than inside it.")
     (:mosaic-spacing "MOSAIC_SPACING" nil nil t)
     (:mosaic-output "MOSAIC_OUTPUT" nil nil t)
     (:mosaic-notes "MOSAIC_NOTES" nil nil t)
+    (:mosaic-notes-paper "MOSAIC_NOTES_PAPER" nil org-rlr-mosaic-notes-paper t)
     (:mosaic-handout "MOSAIC_HANDOUT" nil nil t)
     (:mosaic-overflow "MOSAIC_OVERFLOW" nil nil t)
     (:mosaic-frozen-counters "MOSAIC_FROZEN_COUNTERS" nil nil t)
@@ -814,6 +833,20 @@ INFO is a plist used as a communication channel."
                 (mapconcat (lambda (arg) (concat "  " (org-trim arg) ",")) args "\n"))
       "#show: m.setup\n")))
 
+(defun org-rlr-mosaic--notes-paper (info)
+  "Return a `#set page' rule fixing the printed outputs' paper, or nil.
+
+Mosaic hard-codes A4 for the `speaker' and `notes' companions, so the
+paper is changed by a rule after `m.setup' rather than by an argument to
+it.  The rule is confined to those two outputs: `slides' and `split'
+size their page from the slide itself, and a `paper:' rule would replace
+that geometry.  INFO is a plist used as a communication channel."
+  (let ((output (downcase (org-trim (or (plist-get info :mosaic-output) ""))))
+        (paper (org-string-nw-p (or (plist-get info :mosaic-notes-paper) ""))))
+    (and paper
+         (member output '("speaker" "notes"))
+         (format "\n#set page(paper: %S)\n" (org-trim paper)))))
+
 (defun org-rlr-mosaic--preamble (info)
   "Return the deck's `#+MOSAIC_PREAMBLE:' rules, or nil.
 
@@ -868,6 +901,9 @@ communication channel."
     (concat (org-rlr-mosaic--imports info)
             "\n"
             (org-rlr-mosaic--setup info)
+            ;; Before the document's own rules, so that a deck wanting
+            ;; something else can simply state it.
+            (org-rlr-mosaic--notes-paper info)
             (org-rlr-mosaic--preamble info)
             "\n"
             (org-rlr-mosaic--title-slide info)
