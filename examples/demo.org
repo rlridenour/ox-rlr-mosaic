@@ -144,3 +144,18 @@ First alternative.
 #+MOSAIC: split
 Second alternative, in the same slot.
 #+end_replace
+
+** Quotations
+
+A plain quote block stays a native Typst quote, styled by the theme.
+
+#+begin_quote
+The estimate is positive.
+#+end_quote
+
+An =#+ATTR_MOSAIC:= line turns it into Mosaic's quote component.
+
+#+ATTR_MOSAIC: :attribution Ada Lovelace :source Notes, 1843
+#+begin_quote
+The Analytical Engine weaves algebraic patterns.
+#+end_quote

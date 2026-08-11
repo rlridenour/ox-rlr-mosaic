@@ -90,6 +90,7 @@ These keywords are passed to `m.setup`:
 | `#+MOSAIC_FROZEN_COUNTERS:`, `#+MOSAIC_FROZEN_STATES:` | Advance once per logical slide |
 | `#+MOSAIC_SETUP:` | Raw extra arguments, one per line, repeatable |
 | `#+MOSAIC_PACKAGE:` | Package spec (default `@preview/mosaic:0.0.1`) |
+| `#+MOSAIC_QUOTE_COMPONENT:` | `t` routes every `#+begin_quote` through Mosaic's quote component |
 | `#+MOSAIC_TITLE_SLIDE:` | `nil` for none, or a variant name such as `kicker` |
 
 A title slide is emitted automatically when the document has a title.
@@ -187,6 +188,7 @@ Pause here and take questions.
 | `#+begin_step 2-4` | `#m.steps.on("2-4")[...]` |
 | `#+begin_replace` (alternatives separated by `#+MOSAIC: split`) | `#m.steps.replace[...][...]` |
 | `#+begin_callout`, `#+begin_card`, `#+begin_badge` | `#m.components.NAME(...)[...]` |
+| `#+begin_quote` | `#quote(block: true)[...]`, or Mosaic's quote component — see below |
 
 A `#+ATTR_MOSAIC:` line supplies further arguments to any of these, with
 the same value coercion as headline properties:
@@ -200,6 +202,30 @@ Components are reachable as named blocks.
 
 Any other `#+begin_NAME` block falls through to the parent back-end,
 which calls a same-named Typst function.
+
+## Quotations
+
+Org parses `#+begin_quote` into its own element type rather than a
+special block, so it is handled separately. A plain quote block becomes
+a native Typst `#quote(block: true)`, which the theme styles as ordinary
+block quotation. Adding an `#+ATTR_MOSAIC:` line switches it to Mosaic's
+panelled quote component, whose arguments have nowhere else to go:
+
+```org
+#+ATTR_MOSAIC: :attribution Ada Lovelace :source Notes, 1843
+#+begin_quote
+The Analytical Engine weaves algebraic patterns.
+#+end_quote
+```
+
+`:attribution` and `:source` are content fields, so bare words are
+wrapped for you and Typst markup is passed through
+(`:attribution [*Grace Hopper*]`). `:role`, `:fill`, `:accent`, and the
+component's other arguments work too.
+
+To use the component for *every* quote block, set
+`org-rlr-mosaic-quote-component` to `t`, or `#+MOSAIC_QUOTE_COMPONENT: t`
+per file.
 
 ## Escape hatches
 

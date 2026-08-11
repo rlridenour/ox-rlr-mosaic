@@ -127,6 +127,20 @@ Stock variants are \"ruled\", \"centered\", \"bordered\", \"kicker\",
   :group 'org-export-rlr-mosaic
   :type '(choice (const "16-9") (const "4-3")))
 
+(defcustom org-rlr-mosaic-quote-component nil
+  "Whether `#+begin_quote' becomes Mosaic's quote component.
+
+When nil, a quote block becomes a native Typst `#quote(block: true)',
+which the theme styles as ordinary block quotation.  When non-nil it
+becomes `#m.components.quote(...)' instead, Mosaic's panelled
+attribution treatment.
+
+A quote block carrying an `#+ATTR_MOSAIC:' line always uses the
+component regardless of this setting, since its arguments --
+`:attribution' and `:source' -- have nowhere else to go."
+  :group 'org-export-rlr-mosaic
+  :type 'boolean)
+
 (defcustom org-rlr-mosaic-typst-command "typst"
   "Name of, or path to, the Typst executable used to compile a deck."
   :group 'org-export-rlr-mosaic
@@ -162,7 +176,8 @@ be passed through `:MOSAIC_ARGS:'.")
   "Slide/component fields whose bare-word values are quoted as Typst strings.")
 
 (defconst org-rlr-mosaic--content-fields
-  '("caption" "title" "subtitle" "number" "footer" "header" "body")
+  '("caption" "title" "subtitle" "number" "footer" "header" "body"
+    "attribution" "source")
   "Slide/component fields whose values are wrapped in a Typst content block.")
 
 (defconst org-rlr-mosaic--path-fields '("image")
@@ -199,6 +214,7 @@ after the slide rather than inside it.")
   '((headline . org-rlr-mosaic-headline)
     (inner-template . org-rlr-mosaic-inner-template)
     (keyword . org-rlr-mosaic-keyword)
+    (quote-block . org-rlr-mosaic-quote-block)
     (section . org-rlr-mosaic-section)
     (special-block . org-rlr-mosaic-special-block)
     (template . org-rlr-mosaic-template))
@@ -213,6 +229,8 @@ after the slide rather than inside it.")
     (:mosaic-slide-level "MOSAIC_SLIDE_LEVEL" nil org-rlr-mosaic-slide-level t)
     (:mosaic-title-slide "MOSAIC_TITLE_SLIDE" nil org-rlr-mosaic-title-slide t)
     (:mosaic-paper "MOSAIC_PAPER" nil org-rlr-mosaic-paper t)
+    (:mosaic-quote-component "MOSAIC_QUOTE_COMPONENT" nil
+                             org-rlr-mosaic-quote-component t)
     (:mosaic-authors "MOSAIC_AUTHORS" nil nil t)
     (:mosaic-colors "MOSAIC_COLORS" nil nil t)
     (:mosaic-cells "MOSAIC_CELLS" nil nil t)
@@ -570,6 +588,40 @@ CONTENTS is nil.  INFO is a plist used as a communication channel."
       (format "#outline(depth: %s)"
               (if (string-match "[0-9]+" value) (match-string 0 value) "1")))
      (t (org-rlr-typst-keyword keyword contents info)))))
+
+
+;;;; Quote Block
+
+(defun org-rlr-mosaic-quote-block (quote-block contents info)
+  "Transcode a QUOTE-BLOCK element into a Mosaic quote, or a native one.
+
+Org parses `#+begin_quote' into its own element type rather than a
+special block, so Mosaic's quote component is reached from here rather
+than from `org-rlr-mosaic-special-block'.  A `#+ATTR_MOSAIC:' line
+supplies the component's arguments:
+
+  #+ATTR_MOSAIC: :attribution Ada Lovelace :source Notes, 1843
+  #+begin_quote
+  The Analytical Engine weaves algebraic patterns.
+  #+end_quote
+
+The component is used whenever such a line is present, and otherwise
+only when `org-rlr-mosaic-quote-component' asks for it; a plain quote
+block stays a native Typst `#quote(block: true)' so that the theme's own
+quotation styling applies.
+
+CONTENTS is the transcoded contents string.  INFO is a plist used as a
+communication channel."
+  (let ((attrs (org-rlr-mosaic--attribute-args quote-block)))
+    (if (or attrs
+            (org-rlr-mosaic--option-flag (plist-get info :mosaic-quote-component)))
+        ;; The body is the component's first positional parameter, which
+        ;; a trailing content block supplies.
+        (format "%s[\n%s\n]\n\n"
+                (org-rlr-mosaic--call "#m.components.quote"
+                                      (org-rlr-mosaic--join-args attrs))
+                (org-trim (org-rlr-mosaic--strip-markers (or contents ""))))
+      (org-rlr-typst-quote-block quote-block contents info))))
 
 
 ;;;; Special Block
