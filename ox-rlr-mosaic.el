@@ -239,6 +239,7 @@ after the slide rather than inside it.")
     (:mosaic-foreground "MOSAIC_FOREGROUND" nil nil t)
     (:mosaic-spacing "MOSAIC_SPACING" nil nil t)
     (:mosaic-output "MOSAIC_OUTPUT" nil nil t)
+    (:mosaic-notes "MOSAIC_NOTES" nil nil t)
     (:mosaic-handout "MOSAIC_HANDOUT" nil nil t)
     (:mosaic-overflow "MOSAIC_OVERFLOW" nil nil t)
     (:mosaic-frozen-counters "MOSAIC_FROZEN_COUNTERS" nil nil t)
@@ -381,6 +382,36 @@ ever present here."
     (while (and parts (equal (car parts) "")) (setq parts (cdr parts)))
     (nreverse parts)))
 
+(defun org-rlr-mosaic--strip-note-calls (string)
+  "Return STRING with every `#m.note[...]' call removed.
+
+Bracket nesting inside a note is tracked, so a note whose own body
+contains bracketed content is removed whole."
+  (let ((call "#m.note[")
+        (start 0)
+        (out "")
+        (done nil))
+    (while (not done)
+      (let ((hit (string-match (regexp-quote call) string start)))
+        (if (not hit)
+            (setq out (concat out (substring string start))
+                  done t)
+          (setq out (concat out (substring string start hit)))
+          (let ((index (+ hit (length call)))
+                (depth 1)
+                (length (length string)))
+            (while (and (< index length) (> depth 0))
+              (pcase (aref string index)
+                (?\[ (setq depth (1+ depth)))
+                (?\] (setq depth (1- depth))))
+              (setq index (1+ index)))
+            (setq start index)))))
+    out))
+
+(defun org-rlr-mosaic--notes-only-p (string)
+  "Non-nil when STRING holds speaker notes and nothing else."
+  (string-empty-p (org-trim (org-rlr-mosaic--strip-note-calls string))))
+
 (defun org-rlr-mosaic--strip-markers (string)
   "Remove any internal sentinels left in STRING."
   (replace-regexp-in-string
@@ -473,6 +504,16 @@ consequences shape what this emits:
          (title-p (equal layout "title"))
          (section-p (equal layout "section"))
          (headerless (member variant org-rlr-mosaic--headerless-variants))
+         ;; A body holding nothing but speaker notes is not cell content.
+         ;; Notes render nowhere, but as a block they still count against
+         ;; the layout's cell budget, and the layouts most likely to
+         ;; carry a bare note are exactly the ones with no body cell to
+         ;; spare -- the image layout's figure variant has header, image,
+         ;; and caption only.  Fold them into the slide's own block,
+         ;; where Mosaic collects them just the same.
+         (notes-only (and cells (cl-every #'org-rlr-mosaic--notes-only-p cells)))
+         (notes (and notes-only (org-trim (mapconcat #'identity cells "\n\n"))))
+         (cells (if notes-only nil cells))
          ;; Fields are refinements of the configured content layout
          ;; unless the document named a different one.
          (content-p (member layout '(nil "content")))
@@ -502,23 +543,30 @@ consequences shape what this emits:
                                  (assoc-delete-all "layout" (copy-sequence fields)))))))
               (org-rlr-mosaic--field-args fields))
             (and (org-string-nw-p extra) (list (org-trim extra))))))
+         (join (lambda (&rest parts)
+                 (mapconcat #'identity (delq nil (mapcar #'org-string-nw-p parts))
+                            "\n\n")))
          (blocks
           (cond
            ;; A title slide inherits title, subtitle, authors, and date
-           ;; from setup and has no cells to fill.
+           ;; from setup and takes no blocks at all.
            (title-p "")
            ;; A section slide takes its title as plain content; its
            ;; child slides follow the call rather than nesting in it.
-           (section-p (format "[%s]" title))
+           (section-p (format "[%s]" (funcall join title notes)))
            ;; No header cell: the heading opens the first content cell.
            (headerless
             (let ((cells (or cells (list ""))))
-              (concat (format "[\n%s\n\n%s\n]" heading (org-trim (car cells)))
+              (concat (format "[\n%s\n]"
+                              (funcall join heading notes (org-trim (car cells))))
                       (mapconcat (lambda (cell) (format "[\n%s\n]" cell))
                                  (cdr cells) ""))))
-           (t (concat (format "[%s]" heading)
-                      (mapconcat (lambda (cell) (format "[\n%s\n]" cell)) cells ""))))))
-    (concat (org-rlr-mosaic--call "#m.slide" args) blocks "\n\n")))
+           (t (concat (format "[%s]" (funcall join heading notes))
+                      (mapconcat (lambda (cell) (format "[\n%s\n]" cell)) cells "")))))
+         ;; A title layout accepts no block, so its notes have to precede
+         ;; the call instead of riding inside one.
+         (prologue (and title-p notes (concat notes "\n\n"))))
+    (concat prologue (org-rlr-mosaic--call "#m.slide" args) blocks "\n\n")))
 
 (defun org-rlr-mosaic-headline (headline contents info)
   "Transcode a HEADLINE element into a Mosaic slide.
@@ -746,6 +794,8 @@ INFO is a plist used as a communication channel."
                            (format "spacing: %s" (funcall raw :mosaic-spacing)))
                       (and (funcall raw :mosaic-output)
                            (format "output: %S" (funcall raw :mosaic-output)))
+                      (and (funcall raw :mosaic-notes)
+                           (format "notes: %s" (funcall raw :mosaic-notes)))
                       (and (org-rlr-mosaic--option-flag (plist-get info :mosaic-handout))
                            "handout: true")
                       (and (funcall raw :mosaic-overflow)

@@ -1,0 +1,122 @@
+#+TITLE: Presenting with a console
+#+SUBTITLE: Speaker notes on a second screen
+#+AUTHOR: Ada Lovelace
+#+DATE: 2026
+#+MOSAIC_PACKAGE: @local/mosaic:0.0.2
+#+MOSAIC_THEME: editorial
+#+MOSAIC_OUTPUT: split
+#+MOSAIC_NOTES: (split-inset: 10mm)
+
+# The presenter console is a Mosaic 0.0.2 feature, so this deck pins the
+# development version rather than the published 0.0.1 the other example
+# uses. Install it with `make install` in a clone of the Mosaic repo.
+#
+# Build it three ways:
+#
+#   #+MOSAIC_OUTPUT: split     double-width pages: slide | notes
+#   #+MOSAIC_OUTPUT: speaker   A4, slide thumbnail above its notes
+#   #+MOSAIC_OUTPUT: notes     A4, notes alone
+#
+# Then present with either console:
+#
+#   pympress presenter.pdf              splits automatically
+#   pdfpc --notes=right presenter.pdf   tell pdfpc which half is notes
+
+* Notes that apply to a whole slide
+
+** What a console shows you
+
+A presenter console drives two displays: the projector shows the slide,
+your laptop shows the same slide with its notes, the next slide, and a
+clock.
+
+- pympress reads a double-width page automatically
+- pdfpc needs =--notes=right=
+
+#+begin_note
+Open with the two-screen problem, not the tooling. Everyone has watched
+a speaker read from the projected slide.
+
+Mention that Typst only makes a PDF — the console is a separate program.
+#+end_note
+
+** Notes hold more than a script
+
+A note is also the place for material that supports a slide without
+belonging on it.
+
+#+begin_note
+Source for the figure on the next slide:
+https://example.org/replication-archive
+
+Remember the question Dana asked last time about the 1950 baseline.
+#+end_note
+
+* Notes attached to a step
+
+** Findings
+
+- The estimate is positive.
+
+#+MOSAIC: pause
+
+- The interval excludes zero.
+
+#+begin_note
+A note written after a pause belongs to the frame the pause opens, so
+this line appears on the console only once the second bullet is up.
+
+Give the magnitude before the uncertainty.
+#+end_note
+
+** Revealed one at a time
+
+#+begin_reveal
+- Design
+- Estimation
+- Inference
+#+end_reveal
+
+#+begin_note
+Three frames, one logical slide. The console's next-slide preview skips
+past the build to the slide that actually follows.
+#+end_note
+
+* Notes on a layout slide
+
+** Growth since 1950
+:PROPERTIES:
+:MOSAIC_LAYOUT: image
+:MOSAIC_IMAGE: fig/chart.png
+:MOSAIC_CAPTION: Estimates from the replication archive
+:END:
+
+#+begin_note
+The image layout has no body cell, so this note is the only place the
+commentary can live. That is the point: notes carry what the slide
+deliberately leaves out.
+
+Bars are indexed to 1950 = 100.
+#+end_note
+
+** A slide with no notes at all
+
+The console shows an empty notes half here, which is fine — not every
+slide needs a script.
+
+* Restyling the notes half
+
+** The notes use their own labels
+
+The notes half stays black on white whatever the deck does, because it
+is read off a laptop under house lights rather than projected.
+
+#+MOSAIC: #show label("mosaic-note-body"): set text(size: 11pt)
+
+#+begin_note
+Both printed outputs and the split output use =<mosaic-note-heading>=
+and =<mosaic-note-body>=, so one rule restyles all three.
+
+If a note overflows its half the compile fails and names the frame;
+raise =#+MOSAIC_NOTES: (split-inset: 6mm)= to give it more room.
+#+end_note
