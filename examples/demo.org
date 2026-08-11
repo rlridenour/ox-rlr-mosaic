@@ -1,0 +1,146 @@
+#+TITLE: Slides from Org
+#+SUBTITLE: A Mosaic deck written as an outline
+#+AUTHOR: Ada Lovelace; Grace Hopper
+#+DATE: 2026
+#+MOSAIC_THEME: editorial
+#+MOSAIC_TITLE_SLIDE: ruled
+#+MOSAIC_COLORS: (accent: rgb("#007f73"))
+#+MOSAIC_CELLS: (footer: [ox-rlr-mosaic])
+#+MOSAIC_FOREGROUND: [#place(bottom + right, dx: -1em, dy: -1em)[#m.components.progress()]]
+#+OPTIONS: toc:t
+
+* Ordinary slides
+
+Everything between a section heading and the first slide becomes that
+section slide's subtitle.
+
+** A bulleted slide
+
+A level-two heading is a content slide; Mosaic builds it from the
+heading itself, so nothing else is needed.
+
+- Ordinary Org markup, *bold* and /italic/
+- Inline code =like this= and math $e^{i\pi} + 1 = 0$
+- Links to [[https://typst.app][Typst]]
+
+** Lists, tables, and math
+
+| Method   | Estimate | SE   |
+|----------+----------+------|
+| OLS      |     0.42 | 0.11 |
+| IV       |     0.38 | 0.19 |
+
+\begin{equation}
+\hat{\beta} = (X^{\top}X)^{-1} X^{\top} y
+\end{equation}
+
+*** A deeper heading
+
+A heading below the slide level stays an ordinary heading inside the
+slide body rather than starting a new slide.
+
+* Slide layouts
+
+Headline properties carry Mosaic's layout fields.
+
+** Comparison
+
+A body split into cells becomes a multi-column slide, with no property
+needed: the split alone is enough.
+
+- Left column
+- Two bullets
+
+#+MOSAIC: split
+
+- Right column
+- Two more
+
+** Uneven split
+:PROPERTIES:
+:MOSAIC_TRACKS: (2fr, 1fr)
+:END:
+
+The wide side, twice the width of the narrow one.
+
+#+MOSAIC: split
+
+The narrow side.
+
+** Growth since 1950
+:PROPERTIES:
+:MOSAIC_LAYOUT: image
+:MOSAIC_IMAGE: fig/chart.png
+:MOSAIC_CAPTION: Estimates from the replication archive
+:END:
+
+** Readings
+:PROPERTIES:
+:MOSAIC_LAYOUT: image
+:MOSAIC_VARIANT: right
+:MOSAIC_IMAGE: fig/chart.png
+:MOSAIC_TRACKS: 40%
+:END:
+
+- Almost every week
+- PDFs on the course site
+
+** Who are you?
+:PROPERTIES:
+:MOSAIC_LAYOUT: image
+:MOSAIC_VARIANT: full
+:MOSAIC_IMAGE: (path: path("fig/chart.png"), scrim: black.transparentize(40%))
+:MOSAIC_SCOPE: #show label("mosaic-cell-body"): set text(fill: white)
+:END:
+
+A full-bleed picture with the heading over it.
+
+** Methods
+:PROPERTIES:
+:MOSAIC_LAYOUT: section
+:MOSAIC_VARIANT: baseline
+:END:
+
+** An inverted slide
+:PROPERTIES:
+:MOSAIC_INVERT: true
+:MOSAIC_ARGS: numbered: false
+:END:
+
+Raw Typst arguments reach the slide call through =:MOSAIC_ARGS:=.
+
+* Incremental reveals
+
+** Findings
+
+- The estimate is positive.
+
+#+MOSAIC: pause
+
+- The interval excludes zero.
+
+#+begin_note
+Pause here and take questions before the interval claim.
+#+end_note
+
+** Steps and components
+
+#+begin_reveal
+- Revealed one
+- item at a time
+#+end_reveal
+
+#+begin_step 2-
+Shown from the second step onward.
+#+end_step
+
+#+ATTR_MOSAIC: :role warning :title Careful
+#+begin_callout
+Components are reachable as named blocks.
+#+end_callout
+
+#+begin_replace
+First alternative.
+#+MOSAIC: split
+Second alternative, in the same slot.
+#+end_replace

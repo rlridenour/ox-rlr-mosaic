@@ -1,0 +1,4 @@
+*.elc
+*.pdf
+examples/*.typ
+.DS_Store
