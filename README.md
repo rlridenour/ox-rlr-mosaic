@@ -81,7 +81,7 @@ These keywords are passed to `m.setup`:
 | `#+MOSAIC_AUTHORS:` | Raw `authors:` value, for `m.layouts.author(...)` records |
 | `#+MOSAIC_THEME:` | Theme facade: `default`, `editorial`, `metropolis`, `manifesto`, `mono` |
 | `#+MOSAIC_PAPER:` | `16-9` (default) or `4-3` |
-| `#+MOSAIC_COLORS:` | Semantic palette overrides, e.g. `(accent: rgb("#007f73"))` |
+| `#+MOSAIC_COLORS:` | Palette, or overrides of one, e.g. `m.palettes.dark` |
 | `#+MOSAIC_LAYOUTS:` | Replace the configured `content`, `title`, or `section` layout |
 | `#+MOSAIC_CELLS:` | Recurring cell defaults, e.g. `(footer: [My course])` |
 | `#+MOSAIC_BACKGROUND:`, `#+MOSAIC_FOREGROUND:` | Full-slide planes |
@@ -97,6 +97,33 @@ These keywords are passed to `m.setup`:
 | `#+MOSAIC_PACKAGE:` | Package spec (default `@preview/mosaic:0.0.1`) |
 | `#+MOSAIC_QUOTE_COMPONENT:` | `t` routes every `#+begin_quote` through Mosaic's quote component |
 | `#+MOSAIC_TITLE_SLIDE:` | `nil` for none, or a variant name such as `kicker` |
+
+### Dark decks
+
+Polarity is a palette rather than a theme — Mosaic ships no dark theme,
+and every theme adapts to either:
+
+```org
+#+MOSAIC_COLORS: m.palettes.dark
+```
+
+`palettes` also carries `light`, `parchment`, `sage`, `stone`,
+`espresso`, `forest`, and `slate`. Each is an ordinary dictionary, so
+tuning one is addition: `m.palettes.dark + (accent: rgb("#b91c1c"))`.
+Partial overrides work the same way — `(accent: rgb("#007f73"))` keeps
+the theme's other colors.
+
+Write `m.palettes.NAME` rather than the `mosaic.palettes.NAME` spelling
+Mosaic's own documentation uses. Every facade exports `palettes`, so the
+`m.` form works whether or not the deck names a theme; the `mosaic.`
+form only resolves when it does, because the package is aliased as
+`mosaic` only alongside a theme facade.
+
+In the presenter outputs a dark deck stays dark on the projected half
+while the notes half stays black on white, which is the polarity you
+want on a laptop under house lights.
+
+### Deck-wide rules
 
 Deck-wide `set` and `show` rules — typography, cell styling, note
 styling — belong in `#+MOSAIC_PREAMBLE:`, which Mosaic expects

@@ -5,6 +5,21 @@
 #+MOSAIC_PACKAGE: @local/mosaic:0.0.2
 #+MOSAIC_THEME: editorial
 #+MOSAIC_OUTPUT: split
+
+# Polarity is a palette, not a theme: Mosaic ships no dark theme, and
+# every theme adapts to either. Uncomment the next line to present this
+# deck dark. The notes half stays black on white either way, which is
+# what you want on a laptop read under house lights.
+#
+# #+MOSAIC_COLORS: m.palettes.dark
+#
+# `palettes' also carries light, parchment, sage, stone, espresso,
+# forest, and slate, and each is an ordinary dictionary, so tuning one
+# is addition: `m.palettes.dark + (accent: rgb("#b91c1c"))'.
+#
+# Write `m.palettes.NAME', not `mosaic.palettes.NAME': every facade
+# exports `palettes', so the `m.' spelling works whether or not the deck
+# names a theme.
 #+MOSAIC_NOTES: (split-inset: 10mm)
 
 # Mosaic sizes the notes for a printed A4 companion (10pt body, 12pt
@@ -131,4 +146,21 @@ and =<mosaic-note-body>=, so one rule restyles all three.
 
 If a note overflows its half the compile fails and names the frame;
 raise =#+MOSAIC_NOTES: (split-inset: 6mm)= to give it more room.
+#+end_note
+
+** Presenting in the dark
+
+Polarity is a palette rather than a theme, so a dark deck is one line —
+=#+MOSAIC_COLORS: m.palettes.dark= — and every theme adapts to it.
+
+- The projected half follows the palette
+- The notes half stays black on white
+
+#+begin_note
+That split is deliberate. The projector is dark for the room; the
+console is read off a laptop under house lights, where dark type on
+white is easier at arm's length.
+
+The header of this file has the line commented out — uncomment it to
+see this deck in the other polarity.
 #+end_note
