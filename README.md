@@ -263,9 +263,24 @@ The Analytical Engine weaves algebraic patterns.
 ```
 
 `:attribution` and `:source` are content fields, so bare words are
-wrapped for you and Typst markup is passed through
-(`:attribution [*Grace Hopper*]`). `:role`, `:fill`, `:accent`, and the
-component's other arguments work too.
+wrapped for you and Typst markup is passed through. `:role`, `:fill`,
+`:accent`, and the component's other arguments work too.
+
+Values on an `#+ATTR_MOSAIC:` line are **Typst, not Org**, so italicise
+a title with Typst's `_..._` rather than Org's `/.../`:
+
+```org
+#+ATTR_MOSAIC: :attribution Aristotle :source _Politics_
+```
+
+When both are given they are emitted as a single joined `attribution`
+rather than as Mosaic's two arguments. Mosaic renders them on one line
+separated by a comma, but joins them across a newline in markup, which
+Typst reads as a space — the credit comes out as `Aristotle , Politics`.
+Joining them here sets the comma tight and leaves each half free to
+carry its own markup. Nothing is lost: Mosaic gives `source` no styling
+of its own and reads it nowhere else. Either one alone renders correctly
+through Mosaic's own argument and is passed through untouched.
 
 To use the component for *every* quote block, set
 `org-rlr-mosaic-quote-component` to `t`, or `#+MOSAIC_QUOTE_COMPONENT: t`

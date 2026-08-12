@@ -153,9 +153,10 @@ A plain quote block stays a native Typst quote, styled by the theme.
 The estimate is positive.
 #+end_quote
 
-An =#+ATTR_MOSAIC:= line turns it into Mosaic's quote component.
+An =#+ATTR_MOSAIC:= line turns it into Mosaic's quote component. Values
+there are Typst, so =_..._= italicises a title.
 
-#+ATTR_MOSAIC: :attribution Ada Lovelace :source Notes, 1843
+#+ATTR_MOSAIC: :attribution Ada Lovelace :source _Notes on the Analytical Engine_
 #+begin_quote
 The Analytical Engine weaves algebraic patterns.
 #+end_quote
