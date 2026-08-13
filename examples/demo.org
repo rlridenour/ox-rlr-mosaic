@@ -29,6 +29,8 @@ heading itself, so nothing else is needed.
 |----------+----------+------|
 | OLS      |     0.42 | 0.11 |
 | IV       |     0.38 | 0.19 |
+|----------+----------+------|
+| Pooled   |     0.40 | 0.09 |
 
 \begin{equation}
 \hat{\beta} = (X^{\top}X)^{-1} X^{\top} y

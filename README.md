@@ -90,6 +90,7 @@ These keywords are passed to `m.setup`:
 | `#+MOSAIC_OUTPUT:` | `slides` (default), `speaker`, `notes`, or `split` |
 | `#+MOSAIC_NOTES:` | Note-layout settings, e.g. `(split-inset: 10mm)` |
 | `#+MOSAIC_NOTES_PAPER:` | Paper for the printed `speaker`/`notes` outputs (default `us-letter`) |
+| `#+MOSAIC_TABLE_RULE_STROKE:` | Stroke for a table's `\|---\|` rules (default `0.8pt + text.fill`) |
 | `#+MOSAIC_OVERFLOW:` | `off` (default), `error`, or `record` |
 | `#+MOSAIC_FROZEN_COUNTERS:`, `#+MOSAIC_FROZEN_STATES:` | Advance once per logical slide |
 | `#+MOSAIC_SETUP:` | Raw extra arguments, one per line, repeatable |
@@ -285,6 +286,53 @@ through Mosaic's own argument and is passed through untouched.
 To use the component for *every* quote block, set
 `org-rlr-mosaic-quote-component` to `t`, or `#+MOSAIC_QUOTE_COMPONENT: t`
 per file.
+
+## Tables
+
+A table has **no cell borders at all**, and a horizontal rule exactly
+where the Org source draws one with `|---|`:
+
+```org
+| Method | Estimate |   SE |
+|--------+----------+------|
+| OLS    |     0.42 | 0.11 |
+| IV     |     0.38 | 0.19 |
+|--------+----------+------|
+| Pooled |     0.40 | 0.09 |
+```
+
+That deck gets a line under the header and a line above `Pooled`, and
+nothing else. A table written without any `|---|` row gets no lines at
+all. The rule under a header repeats with the header if the table breaks
+across pages, and consecutive `|---|` rows collapse into one line rather
+than stacking.
+
+Typst paints a table rule black, which disappears on a dark deck, so the
+rules are restated in `org-rlr-mosaic-table-rule-stroke` — by default
+`0.8pt + text.fill`, which follows the deck's own text color in either
+polarity and under any theme. `#+MOSAIC_TABLE_RULE_STROKE:` sets it per
+file; any Typst stroke expression works:
+
+```org
+#+MOSAIC_TABLE_RULE_STROKE: 1pt + m.palettes.dark.accent
+```
+
+Setting it to `nil` leaves Typst's own stroke alone.
+
+Everything else about tables comes from `ox-rlr-typst` unchanged.
+`#+ATTR_TYPST:` passes arguments straight through to `#table(...)`, so a
+deck that *wants* a grid can say so, and a rule given its own stroke by
+hand is left as written:
+
+```org
+#+ATTR_TYPST: :stroke 0.5pt :fill (x, y) => if y == 0 { luma(240) }
+| a | b |
+|---+---|
+| 1 | 2 |
+```
+
+A `#+CAPTION:` or `#+NAME:` wraps the table in `#figure(...)`, so it is
+numbered as *Table N* and can be referenced with an ordinary Org link.
 
 ## Presenting with a console
 
