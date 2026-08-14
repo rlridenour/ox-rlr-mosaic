@@ -2,7 +2,6 @@
 #+SUBTITLE: Speaker notes on a second screen
 #+AUTHOR: Ada Lovelace
 #+DATE: 2026
-#+MOSAIC_PACKAGE: @local/mosaic:0.0.2
 #+MOSAIC_THEME: editorial
 #+MOSAIC_OUTPUT: split
 
@@ -26,15 +25,12 @@
 # bold heading). On a console that is read at arm's length off a laptop,
 # so these rules scale them up deck-wide; they apply to the split output
 # and to the printed `speaker'/`notes' builds alike.
-#
-# `weight: "regular"' is deliberate: the heading's bold otherwise carries
-# into the note body, which renders the whole notes half bold.
-#+MOSAIC_PREAMBLE: #show label("mosaic-note-body"): set text(size: 16pt, weight: "regular")
+#+MOSAIC_PREAMBLE: #show label("mosaic-note-body"): set text(size: 16pt)
 #+MOSAIC_PREAMBLE: #show label("mosaic-note-heading"): set text(size: 16pt)
 
-# The presenter console is a Mosaic 0.0.2 feature, so this deck pins the
-# development version rather than the published 0.0.1 the other example
-# uses. Install it with `make install` in a clone of the Mosaic repo.
+# The presenter console is a Mosaic 0.0.2 feature, which is what
+# `org-rlr-mosaic-package' imports by default; install it with
+# `make install' in a clone of the Mosaic repo.
 #
 # Build it three ways:
 #

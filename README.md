@@ -21,9 +21,29 @@ it.
 (require 'ox-rlr-mosaic)
 ```
 
-Nothing needs to be installed on the Typst side. The default package
-spec is the version published on Typst Universe, which Typst fetches
-automatically the first time you compile.
+On the Typst side, the default package spec is Mosaic's development
+version, `@local/mosaic:0.0.2`. It carries the presenter console and
+fixes the published package does not have, and it is installed from a
+clone of the Mosaic repository:
+
+```sh
+git clone https://github.com/vincentarelbundock/mosaic.git
+cd mosaic
+make install
+```
+
+On macOS `make install` writes to `~/.local/share`, which Typst does
+not read; pass the path it does read:
+
+```sh
+make install TYPST_PACKAGE_PATH="$HOME/Library/Application Support/typst/packages"
+```
+
+To build against Typst Universe instead — nothing to install, fetched
+automatically on first compile — set `org-rlr-mosaic-package` to
+`"@preview/mosaic:0.0.1"`, or `#+MOSAIC_PACKAGE: @preview/mosaic:0.0.1`
+per deck. The published 0.0.1 has no presenter console, and sets a
+space before the comma in a quote credit.
 
 ## Usage
 
@@ -36,8 +56,7 @@ automatically the first time you compile.
 
 Two example decks are included. `examples/demo.org` exercises every
 feature below and produces a 19-page PDF; `examples/presenter.org` is
-built around speaker notes and a presenter console, and needs Mosaic
-0.0.2.
+built around speaker notes and a presenter console.
 
 ## The heading model
 
@@ -95,7 +114,7 @@ These keywords are passed to `m.setup`:
 | `#+MOSAIC_FROZEN_COUNTERS:`, `#+MOSAIC_FROZEN_STATES:` | Advance once per logical slide |
 | `#+MOSAIC_SETUP:` | Raw extra arguments, one per line, repeatable |
 | `#+MOSAIC_PREAMBLE:` | Raw Typst rules emitted just after `m.setup`, one per line, repeatable |
-| `#+MOSAIC_PACKAGE:` | Package spec (default `@preview/mosaic:0.0.1`) |
+| `#+MOSAIC_PACKAGE:` | Package spec (default `@local/mosaic:0.0.2`) |
 | `#+MOSAIC_QUOTE_COMPONENT:` | `t` routes every `#+begin_quote` through Mosaic's quote component |
 | `#+MOSAIC_TITLE_SLIDE:` | `nil` for none, or a variant name such as `kicker` |
 
@@ -265,7 +284,8 @@ The Analytical Engine weaves algebraic patterns.
 
 `:attribution` and `:source` are content fields, so bare words are
 wrapped for you and Typst markup is passed through. `:role`, `:fill`,
-`:accent`, and the component's other arguments work too.
+`:accent`, and the component's other arguments work too. Mosaic renders
+the two on one line separated by a comma.
 
 Values on an `#+ATTR_MOSAIC:` line are **Typst, not Org**, so italicise
 a title with Typst's `_..._` rather than Org's `/.../`:
@@ -273,15 +293,6 @@ a title with Typst's `_..._` rather than Org's `/.../`:
 ```org
 #+ATTR_MOSAIC: :attribution Aristotle :source _Politics_
 ```
-
-When both are given they are emitted as a single joined `attribution`
-rather than as Mosaic's two arguments. Mosaic renders them on one line
-separated by a comma, but joins them across a newline in markup, which
-Typst reads as a space — the credit comes out as `Aristotle , Politics`.
-Joining them here sets the comma tight and leaves each half free to
-carry its own markup. Nothing is lost: Mosaic gives `source` no styling
-of its own and reads it nowhere else. Either one alone renders correctly
-through Mosaic's own argument and is passed through untouched.
 
 To use the component for *every* quote block, set
 `org-rlr-mosaic-quote-component` to `t`, or `#+MOSAIC_QUOTE_COMPONENT: t`
@@ -337,14 +348,14 @@ numbered as *Table N* and can be referenced with an ordinary Org link.
 ## Presenting with a console
 
 `examples/presenter.org` is a second deck built around speaker notes;
-`org-rlr-mosaic-export-to-pdf` on it produces 15 double-width pages.
+`org-rlr-mosaic-export-to-pdf` on it produces 16 double-width pages.
 
 A presenter console puts the slide on the projector and the same slide
 with its notes, the next slide, and a clock on your laptop. Typst only
 produces a PDF, so the console is a separate program —
 [pympress](https://pympress.xyz/) and [pdfpc](https://pdfpc.github.io/)
-both read what Mosaic writes. **This needs Mosaic 0.0.2**, so a deck
-using it pins `#+MOSAIC_PACKAGE: @local/mosaic:0.0.2`.
+both read what Mosaic writes. **This needs Mosaic 0.0.2**, which is the
+default package spec — see [Installation](#installation).
 
 There are two routes, and they are alternatives rather than a sequence.
 
@@ -360,23 +371,25 @@ pdfpc --notes=right presenter.pdf   # tell pdfpc which half is notes
 If a note overflows its half the compile fails and names the frame; give
 it more room with `#+MOSAIC_NOTES: (split-inset: 6mm)`.
 
-**A pdfpc sidecar.** Nothing goes in the document for this. The ordinary
-`slides` build carries the notes, and a script in the Mosaic repository
-writes them out beside the PDF, leaving the deck an ordinary
-slide-shaped file you can also project or email:
+**A pdfpc payload in the deck itself.** Nothing goes in the document
+source for this, and no build step either: Mosaic attaches the notes to
+every deck that has any, as an embedded `speaker-notes.pdfpc` keyed to
+the physical page each note belongs to. The deck stays an ordinary
+slide-shaped file you can project or email, and every reader but a
+console ignores the attachment.
+
+pdfpc itself reads only a sidecar, so recover one beside the PDF:
 
 ```sh
-scripts/mosaic-pdfpc.py presenter.typ   # writes presenter.pdfpc
+pdfdetach -savefile speaker-notes.pdfpc -o presenter.pdfpc presenter.pdf
 pdfpc presenter.pdf                     # finds the notes beside it
 ```
 
-Frames after the first of a logical slide are marked as continuations,
-so pdfpc's next-slide preview skips past an incremental build. Notes are
-flattened to Markdown for this format, so a note whose layout matters
-belongs in `split`. pympress does not read it at all.
-
-The same payload is attached to every `slides` build that has notes, as
-`speaker-notes.pdfpc`; recover it with `pdfdetach -saveall`.
+Notes reach the attachment as text, so a note's words survive and its
+layout does not; a note whose shape matters belongs in `split`. pympress
+does not read the format at all. The attachment is written whatever
+output the deck compiles, so a `split` build carries its notes on the
+page *and* as data.
 
 The printed companions are independent of both: `#+MOSAIC_OUTPUT: speaker`
 gives pages with a slide thumbnail above its notes, and `notes` the notes
@@ -402,14 +415,12 @@ their own labels, independent of the deck's theme, so scaling them up is
 a pair of rules rather than a theme change:
 
 ```org
-#+MOSAIC_PREAMBLE: #show label("mosaic-note-body"): set text(size: 16pt, weight: "regular")
+#+MOSAIC_PREAMBLE: #show label("mosaic-note-body"): set text(size: 16pt)
 #+MOSAIC_PREAMBLE: #show label("mosaic-note-heading"): set text(size: 16pt)
 ```
 
-`weight: "regular"` is worth including: by default the heading's bold
-carries into the note body, so the whole notes half renders bold. The
-same labels drive the printed `speaker` and `notes` builds, so one pair
-of rules covers all three.
+The same labels drive the printed `speaker` and `notes` builds, so one
+pair of rules covers all three.
 
 ### Where notes go
 
@@ -455,11 +466,10 @@ identically.
   section layout is a raw grid. Leave section headings bare under
   Metropolis, or use another theme. The other four bundled themes are
   fine.
-- **`#+MOSAIC_OUTPUT: split`** and the pdfpc sidecar need Mosaic 0.0.2;
-  the published 0.0.1 accepts only `slides`, `speaker`, and `notes`. Set
-  `#+MOSAIC_PACKAGE: @local/mosaic:0.0.2` after installing the
-  development version from the Mosaic repository — see
-  [Presenting with a console](#presenting-with-a-console).
+- **`#+MOSAIC_OUTPUT: split`** and the embedded pdfpc notes need Mosaic 0.0.2,
+  the default package spec; a deck pinned to the published
+  `@preview/mosaic:0.0.1` accepts only `slides`, `speaker`, and `notes`
+  — see [Presenting with a console](#presenting-with-a-console).
 - Mosaic has no shrink-to-fit for slide bodies by design. An overflowing
   slide means cutting content or splitting the slide; set
   `#+MOSAIC_OVERFLOW: error` to be told about it at compile time rather
