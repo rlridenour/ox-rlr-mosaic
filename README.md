@@ -254,6 +254,12 @@ Pause here and take questions.
 | `#+begin_callout`, `#+begin_card`, `#+begin_badge` | `#m.components.NAME(...)[...]` |
 | `#+begin_quote` | `#quote(block: true)[...]`, or Mosaic's quote component — see below |
 
+A reveal block that holds only a bulleted list is passed to Mosaic one
+item per body, `#m.steps.reveal[...][...]`, with each item in its own
+block. Mosaic would otherwise rebuild the list with plain bullets in
+place of the theme's markers, so nested lists would not match their
+parents. Each top-level item is revealed with its sub-items.
+
 A `#+ATTR_MOSAIC:` line supplies further arguments to any of these, with
 the same value coercion as headline properties:
 
